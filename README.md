@@ -4,7 +4,7 @@ A simple Dockerized app to test and log your internet speed using [speedtest.net
 
 By default, the script will run once per minute and test your internet speed.
 
-The results are saved and persisted in a SQLite database on the host machine, so you can easily query and analyse the results.
+The results are extracted into JSON, then written and persisted in a SQLite database table on the host machine, so you can easily query and analyse the results.
 
 ## Running the speedtest
 0. Ensure you have Docker and Docker Compose installed on your machine
