@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  python-speedtest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /Users/kilian.tscherny/Documents/Development/python-speedtest:/data

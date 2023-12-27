@@ -4,6 +4,7 @@ A simple Python script to test your internet speed using [speedtest.net](https:/
 
 ## Running the speedtest
 - Clone the repository
-- Ensure you have Docker installed on your machine
-- Run: `docker build -t python-speedtest . && docker run -d -v /path/to/your/local/folder:/data python-speedtest`, where `/path/to/your/local/folder` is the path to the folder where you want to store the results of the speedtest as a `.db` file.
+- Ensure you have Docker and Docker Compose installed on your machine
+- Choose the directory where you want to store the results of the speedtest as a `.db` file and change the volume directory in the `docker-compose.yml` file to that directory
+- Run: `docker-compose up -d`
 - The script will run once per minute and store the results in a `.db` file in the folder you specified above
