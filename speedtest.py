@@ -1,38 +1,53 @@
 import subprocess
+import json
 import sqlite3
 
-# Run speedtest-cli command and capture output
+# Run speedtest-cli command and capture output as JSON
 speedtest_output = subprocess.run(
-    ["speedtest-cli", "--csv"], capture_output=True, text=True
+    ["speedtest-cli", "--json"], capture_output=True, text=True
 ).stdout.strip()
 
 print(speedtest_output)
 
-# Extract values from CSV output
-lines = speedtest_output.split("\n")
-header = "Server ID,Sponsor,Server Name,Timestamp,Distance,Ping,Download,Upload,Share,IP Address"
-values = lines[0]
-
-# Parse CSV header and values
-header_list = header.split(",")
-values_list = values.split(",")
-
-# Create dictionary for the results
-result = {}
-for i in range(len(header_list)):
-    result[header_list[i]] = values_list[i]
+# Parse JSON output
+speedtest_data = json.loads(speedtest_output)
 
 # Extract necessary values
-server_id = result.get("Server ID")
-sponsor = result.get("Sponsor")
-server_name = result.get("Server Name")
-timestamp = result.get("Timestamp")
-distance = result.get("Distance")
-ping = result.get("Ping")
-download_speed = result.get("Download")
-upload_speed = result.get("Upload")
-share = result.get("Share")
-ip_address = result.get("IP Address")
+download_speed = speedtest_data.get("download")
+upload_speed = speedtest_data.get("upload")
+ping = speedtest_data.get("ping")
+
+server = speedtest_data.get("server", {})
+
+server_url = server.get("url")
+server_lat = server.get("lat")
+server_lon = server.get("lon")
+server_name = server.get("name")
+server_country = server.get("country")
+server_cc = server.get("cc")
+server_sponsor = server.get("sponsor")
+server_id = server.get("id")
+server_host = server.get("host")
+server_distance = server.get("d")
+server_latency = server.get("latency")
+
+timestamp = speedtest_data.get("timestamp")
+bytes_sent = speedtest_data.get("bytes_sent")
+bytes_received = speedtest_data.get("bytes_received")
+share = speedtest_data.get("share")
+
+client = speedtest_data.get("client", {})
+
+client_ip = client.get("ip")
+client_lat = client.get("lat")
+client_lon = client.get("lon")
+client_isp = client.get("isp")
+client_isprating = client.get("isprating")
+client_rating = client.get("rating")
+client_ispdlavg = client.get("ispdlavg")
+client_ispulavg = client.get("ispulavg")
+client_loggedin = client.get("loggedin")
+client_country = client.get("country")
 
 # Connect to SQLite database
 conn = sqlite3.connect("/data/speedtest_results.db")
@@ -41,18 +56,36 @@ cursor = conn.cursor()
 # Create a table if it doesn't exist
 cursor.execute(
     """
-    CREATE TABLE IF NOT EXISTS speedtest_results (
+    CREATE TABLE IF NOT EXISTS speedtest_results_table (
         id INTEGER PRIMARY KEY,
-        server_id INTEGER,
-        sponsor TEXT,
-        server_name TEXT,
-        timestamp TEXT,
-        distance REAL,
-        ping REAL,
         download_speed REAL,
         upload_speed REAL,
+        ping REAL,
+        server_url TEXT,
+        server_lat REAL,
+        server_lon REAL,
+        server_name TEXT,
+        server_country TEXT,
+        server_cc TEXT,
+        server_sponsor TEXT,
+        server_id INTEGER,
+        server_host TEXT,
+        server_distance REAL,
+        server_latency REAL,
+        timestamp TEXT,
+        bytes_sent INTEGER,
+        bytes_received INTEGER,
         share TEXT,
-        ip_address TEXT
+        client_ip TEXT,
+        client_lat REAL,
+        client_lon REAL,
+        client_isp TEXT,
+        client_isprating REAL,
+        client_rating REAL,
+        client_ispdlavg REAL,
+        client_ispulavg REAL,
+        client_loggedin TEXT,
+        client_country TEXT
     )
 """
 )
@@ -60,31 +93,67 @@ cursor.execute(
 # Insert the speed test results into the database
 cursor.execute(
     """
-    INSERT INTO speedtest_results (
-        server_id,
-        sponsor,
-        server_name,
-        timestamp,
-        distance,
-        ping,
+    INSERT INTO speedtest_results_table (
         download_speed,
         upload_speed,
+        ping,
+        server_url,
+        server_lat,
+        server_lon,
+        server_name,
+        server_country,
+        server_cc,
+        server_sponsor,
+        server_id,
+        server_host,
+        server_distance,
+        server_latency,
+        timestamp,
+        bytes_sent,
+        bytes_received,
         share,
-        ip_address
+        client_ip,
+        client_lat,
+        client_lon,
+        client_isp,
+        client_isprating,
+        client_rating,
+        client_ispdlavg,
+        client_ispulavg,
+        client_loggedin,
+        client_country
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """,
     (
-        server_id,
-        sponsor,
-        server_name,
-        timestamp,
-        distance,
-        ping,
         download_speed,
         upload_speed,
+        ping,
+        server_url,
+        server_lat,
+        server_lon,
+        server_name,
+        server_country,
+        server_cc,
+        server_sponsor,
+        server_id,
+        server_host,
+        server_distance,
+        server_latency,
+        timestamp,
+        bytes_sent,
+        bytes_received,
         share,
-        ip_address,
+        client_ip,
+        client_lat,
+        client_lon,
+        client_isp,
+        client_isprating,
+        client_rating,
+        client_ispdlavg,
+        client_ispulavg,
+        client_loggedin,
+        client_country,
     ),
 )
 
