@@ -1,11 +1,21 @@
 import subprocess
 import json
 import sqlite3
+import sys
 
 # Run speedtest-cli command and capture output as JSON
-speedtest_output = subprocess.run(
+result = subprocess.run(
     ["speedtest-cli", "--json"], capture_output=True, text=True
-).stdout.strip()
+)
+speedtest_output = result.stdout.strip()
+
+if result.returncode != 0 or not speedtest_output:
+    print("speedtest-cli failed:", result.stderr.strip(), file=sys.stderr)
+    print(
+        "This typically happens in cloud/container environments where "
+        "Speedtest.net blocks requests (HTTP 403)."
+    )
+    sys.exit(1)
 
 print(speedtest_output)
 
